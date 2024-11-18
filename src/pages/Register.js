@@ -1,32 +1,31 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import './RegisterPage.css';
+import axios from 'axios';
 
 const RegisterPage = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    setError('');
+
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/register', {
+      const response = await axios.post('http://localhost:5000/api/register', {
         name,
         email,
         password,
       });
-      setMessage(response.data.message);
-    } catch (error) {
-      // Log the error for debugging
-      console.error('Error during registration:', error);
 
-      // Update the message state based on the error response
-      if (error.response && error.response.data && error.response.data.message) {
-        setMessage(error.response.data.message);
-      } else {
-        setMessage('Something went wrong');
-      }
+      alert('User registered successfully!');
+      setName('');
+      setEmail('');
+      setPassword('');
+    } catch (err) {
+      console.error('Registration error:', err.response ? err.response.data.message : err.message);
+      setError(err.response ? err.response.data.message : 'Something went wrong. Please try again.');
     }
   };
 
@@ -56,8 +55,8 @@ const RegisterPage = () => {
           required
         />
         <button type="submit">Register</button>
+        {error && <p style={{ color: 'red' }}>{error}</p>}
       </form>
-      {message && <p>{message}</p>}
     </div>
   );
 };
