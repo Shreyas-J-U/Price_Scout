@@ -1,24 +1,30 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import './LoginPage.css';
+import axios from 'axios';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setError('');
+
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/login', {
+      const response = await axios.post('http://localhost:5000/api/login', {
         email,
         password,
       });
-      setMessage(response.data.message);
-      // Store the token in local storage or context
+
+      // Save the JWT token in localStorage
       localStorage.setItem('token', response.data.token);
-    } catch (error) {
-      setMessage(error.response?.data?.message || 'Something went wrong');
+      alert('Login successful!');
+      // Redirect to the home page or dashboard
+      window.location.href = '/';
+    } catch (err) {
+      console.error('Login error:', err.response ? err.response.data.message : err.message);
+      setError(err.response ? err.response.data.message : 'Invalid credentials');
     }
   };
 
@@ -41,8 +47,8 @@ const LoginPage = () => {
           required
         />
         <button type="submit">Login</button>
+        {error && <p style={{ color: 'red' }}>{error}</p>}
       </form>
-      {message && <p>{message}</p>}
     </div>
   );
 };
