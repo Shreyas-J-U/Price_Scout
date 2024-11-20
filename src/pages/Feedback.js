@@ -1,26 +1,42 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import './FeedbackPage.css';
 
 const FeedbackPage = () => {
+  const [name, setName] = useState('');
   const [feedback, setFeedback] = useState('');
-  const [email, setEmail] = useState('');
+  const [message, setMessage] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      // Send feedback to the back-end API
-      const response = await axios.post('http://localhost:5000/api/send-feedback', {
-        feedback,
-        email,
-      });
-      alert(response.data.message);
-      setFeedback('');
-      setEmail('');
-    } catch (error) {
-      console.error('Error sending feedback:', error);
-      alert('Failed to send feedback. Please try again later.');
+
+    // Validate the inputs
+    if (!name || !feedback) {
+      setMessage('Both name and feedback are required.');
+      return;
     }
+
+    try {
+      const response = await fetch('http://localhost:5000/api/feedback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, feedback }),
+      });
+
+      const data = await response.json();
+      if (response.status === 200) {
+        setMessage('Thank you for your valuable feedback!');
+      } else {
+        setMessage('Failed to send feedback. Please try again later.');
+      }
+    } catch (error) {
+      setMessage('Failed to send feedback. Please try again later.');
+      console.error('Error submitting feedback:', error);
+    }
+
+    setName('');
+    setFeedback('');
   };
 
   return (
@@ -28,10 +44,11 @@ const FeedbackPage = () => {
       <h2>Feedback</h2>
       <form onSubmit={handleSubmit}>
         <input
-          type="email"
-          placeholder="Your email (optional)"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          type="text"
+          placeholder="Your name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
         />
         <textarea
           placeholder="We value your feedback"
@@ -41,6 +58,7 @@ const FeedbackPage = () => {
         ></textarea>
         <button type="submit">Submit</button>
       </form>
+      {message && <p>{message}</p>}
     </div>
   );
 };
